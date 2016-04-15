@@ -237,93 +237,96 @@ function binford_add_php($template, $destination, $key, $name, $label){
     $output_lines = array();
     $contents = array();
     $start_at = 0;
-    $fc = fopen($destination, "r");
-    if($fc){
-        while(!feof($fc)){
-            $line = fgets($fc, 4096);
-            if( strpos($line, 'get_header()') !== false && $start_at == 0 ){
-                $start_at = count($contents);
+    if(file_exists($destination)){
+        $fc = fopen($destination, "r");
+        if($fc){
+            while(!feof($fc)){
+                $line = fgets($fc, 4096);
+                if( strpos($line, 'get_header()') !== false && $start_at == 0 ){
+                    $start_at = count($contents);
+                }
+
+                $contents[] = $line;
+
+                if(strpos($line, '//binford:field_') !== false){
+                    $start_at = count($contents);
+                }
             }
-
-            $contents[] = $line;
-
-            if(strpos($line, '//binford:field_') !== false){
+            fclose($fc);
+            if($start_at == 0)
                 $start_at = count($contents);
+        }
+
+        $before = array();
+        $after = array();
+
+        if($start_at){
+            $before = array_slice($contents, 0, $start_at);
+            $after = array_slice($contents, $start_at);
+        }
+
+        $contents = array();
+        $fc = fopen($template, "r");
+        if($fc){
+            while(!feof($fc)){
+                $line = fgets($fc, 4096);
+                $line = str_replace('[[field_name]]', $name, $line);
+                $line = str_replace('[[field_label]]', $label, $line);
+                $line = str_replace('[[field_key]]', $key, $line);
+                $contents[] = $line;
             }
+            fclose($fc);
         }
-        fclose($fc);
-        if($start_at == 0)
-            $start_at = count($contents);
+
+        $output = implode("", array_merge($before, $contents, $after));
+        file_put_contents($destination, $output);
     }
-
-    $before = array();
-    $after = array();
-
-    if($start_at){
-        $before = array_slice($contents, 0, $start_at);
-        $after = array_slice($contents, $start_at);
-    }
-
-    $contents = array();
-    $fc = fopen($template, "r");
-    if($fc){
-        while(!feof($fc)){
-            $line = fgets($fc, 4096);
-            $line = str_replace('[[field_name]]', $name, $line);
-            $line = str_replace('[[field_label]]', $label, $line);
-            $line = str_replace('[[field_key]]', $key, $line);
-            $contents[] = $line;
-        }
-        fclose($fc);
-    }
-
-    $output = implode("", array_merge($before, $contents, $after));
-    file_put_contents($destination, $output);
-
 }
 
 function binford_add_image_size($template, $destination, $key, $name, $label){
     $output_lines = array();
     $contents = array();
     $start_at = 0;
-    $fc = fopen($destination, "r");
-    if($fc){
-        while(!feof($fc)){
-            $line = fgets($fc, 4096);
-            if( strpos($line, '$smarty = wp_smarty();') !== false && $start_at == 0 ){
-                $start_at = count($contents);
+    if(file_exists($destination)){
+        $fc = fopen($destination, "r");
+        if($fc){
+            while(!feof($fc)){
+                $line = fgets($fc, 4096);
+                if( strpos($line, '$smarty = wp_smarty();') !== false && $start_at == 0 ){
+                    $start_at = count($contents);
+                }
+
+                $contents[] = $line;
             }
-
-            $contents[] = $line;
+            fclose($fc);
+            if($start_at == 0)
+                $start_at = count($contents);
         }
-        fclose($fc);
-        if($start_at == 0)
-            $start_at = count($contents);
-    }
 
-    $before = array();
-    $after = array();
+        $before = array();
+        $after = array();
 
-    if($start_at){
-        $before = array_slice($contents, 0, $start_at);
-        $after = array_slice($contents, $start_at);
-    }
-
-    $contents = array();
-    $fc = fopen($template, "r");
-    if($fc){
-        while(!feof($fc)){
-            $line = fgets($fc, 4096);
-            $line = str_replace('[[field_name]]', $name, $line);
-            $line = str_replace('[[field_label]]', $label, $line);
-            $line = str_replace('[[field_key]]', $key, $line);
-            $contents[] = $line;
+        if($start_at){
+            $before = array_slice($contents, 0, $start_at);
+            $after = array_slice($contents, $start_at);
         }
-        fclose($fc);
-    }
 
-    $output = implode("", array_merge($before, $contents, $after));
-    file_put_contents($destination, $output);
+        $contents = array();
+        $fc = fopen($template, "r");
+        if($fc){
+            while(!feof($fc)){
+                $line = fgets($fc, 4096);
+                $line = str_replace('[[field_name]]', $name, $line);
+                $line = str_replace('[[field_label]]', $label, $line);
+                $line = str_replace('[[field_key]]', $key, $line);
+                $contents[] = $line;
+            }
+            fclose($fc);
+        }
+
+        $output = implode("", array_merge($before, $contents, $after));
+        file_put_contents($destination, $output);
+    }
 
 }
 
@@ -331,47 +334,49 @@ function binford_add_tpl($template, $destination, $key, $name, $label){
     $output_lines = array();
     $contents = array();
     $start_at = 0;
-    $fc = fopen($destination, "r");
-    if($fc){
-        while(!feof($fc)){
-            $line = fgets($fc, 4096);
-            if( ( strpos($line, '<div class=\'container\'>') !== false || strpos($line, '<div class="container">') !== false ) && $start_at == 0 ){
-                $start_at = count($contents)+1;
+    if(file_exists($destination)){
+        $fc = fopen($destination, "r");
+        if($fc){
+            while(!feof($fc)){
+                $line = fgets($fc, 4096);
+                if( ( strpos($line, '<div class=\'container\'>') !== false || strpos($line, '<div class="container">') !== false ) && $start_at == 0 ){
+                    $start_at = count($contents)+1;
+                }
+
+                $contents[] = $line;
+
+                if(strpos($line, '{* binford:field_') !== false){
+                    $start_at = count($contents)-1;
+                }
             }
+            fclose($fc);
+            if($start_at == 0)
+                $start_at = count($content);
+        }
 
-            $contents[] = $line;
+        $before = array();
+        $after = array();
 
-            if(strpos($line, '{* binford:field_') !== false){
-                $start_at = count($contents)-1;
+        if($start_at){
+            $before = array_slice($contents, 0, $start_at);
+            $after = array_slice($contents, $start_at);
+        }
+
+        $contents = array();
+        $fc = fopen($template, "r");
+        if($fc){
+            while(!feof($fc)){
+                $line = fgets($fc, 4096);
+                $line = str_replace('[[field_name]]', $name, $line);
+                $line = str_replace('[[field_label]]', $label, $line);
+                $line = str_replace('[[field_key]]', $key, $line);
+                $contents[] = $line;
             }
+            fclose($fc);
         }
-        fclose($fc);
-        if($start_at == 0)
-            $start_at = count($content);
+
+        $output = implode("", array_merge($before, $contents, $after));
+        file_put_contents($destination, $output);
     }
-
-    $before = array();
-    $after = array();
-
-    if($start_at){
-        $before = array_slice($contents, 0, $start_at);
-        $after = array_slice($contents, $start_at);
-    }
-
-    $contents = array();
-    $fc = fopen($template, "r");
-    if($fc){
-        while(!feof($fc)){
-            $line = fgets($fc, 4096);
-            $line = str_replace('[[field_name]]', $name, $line);
-            $line = str_replace('[[field_label]]', $label, $line);
-            $line = str_replace('[[field_key]]', $key, $line);
-            $contents[] = $line;
-        }
-        fclose($fc);
-    }
-
-    $output = implode("", array_merge($before, $contents, $after));
-    file_put_contents($destination, $output);
 
 }
